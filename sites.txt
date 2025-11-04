@@ -1,0 +1,28 @@
+# Sites to block during blocking hours (7pm-7am)
+# Add one domain per line
+# Lines starting with # are ignored
+
+# Social Media
+reddit.com
+# twitter.com
+# x.com
+# instagram.com
+# facebook.com
+# tiktok.com
+
+# Video
+youtube.com
+# netflix.com
+
+# News / Media
+polygon.com
+
+# Professional
+linkedin.com
+
+# Email
+gmail.com
+mail.google.com
+
+# Other examples (commented out)
+# news.ycombinator.com
