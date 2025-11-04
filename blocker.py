@@ -28,9 +28,13 @@ def log(message):
 
 def is_blocking_hours():
     """Check if current time is within blocking hours (7pm-7am)"""
-    current_hour = datetime.now().hour
-    # Blocking hours: 19-23 and 0-6 (7pm to 7am)
-    return current_hour >= BLOCKING_START_HOUR or current_hour < BLOCKING_END_HOUR
+    # TEMPORARY: Always block for manual testing
+    # TODO: Uncomment the lines below to re-enable time-based blocking
+    return True
+
+    # current_hour = datetime.now().hour
+    # # Blocking hours: 19-23 and 0-6 (7pm to 7am)
+    # return current_hour >= BLOCKING_START_HOUR or current_hour < BLOCKING_END_HOUR
 
 def load_sites():
     """Load sites to block from configuration file"""
@@ -51,7 +55,7 @@ def load_sites():
 def get_current_blocks():
     """Read current blocker entries from hosts file"""
     if not HOSTS_FILE.exists():
-        return []
+        return ""
 
     try:
         with open(HOSTS_FILE, 'r') as f:
@@ -90,10 +94,16 @@ def update_hosts_file(block_entries):
             content = f.read()
 
         # Remove existing blocker section if present
-        if BLOCKER_MARKER_START in content:
+        if BLOCKER_MARKER_START in content and BLOCKER_MARKER_END in content:
             start = content.index(BLOCKER_MARKER_START)
             end = content.index(BLOCKER_MARKER_END) + len(BLOCKER_MARKER_END)
             content = content[:start] + content[end:]
+        elif BLOCKER_MARKER_START in content:
+            # Corrupted markers - log warning and remove partial entry
+            log("Warning: Found start marker without end marker, removing corrupted entry")
+            start = content.index(BLOCKER_MARKER_START)
+            # Remove from start marker to end of file, then restore what comes after
+            content = content[:start].rstrip() + "\n"
 
         # Clean up extra newlines
         content = content.rstrip() + "\n"
@@ -174,7 +184,12 @@ def main():
     if not SITES_FILE.exists():
         log(f"Warning: Sites file not found at {SITES_FILE}")
         log("Creating empty sites.txt - add sites to block there")
-        SITES_FILE.write_text("# Add sites to block, one per line\n# Example:\n# reddit.com\n# twitter.com\n")
+        try:
+            SITES_FILE.write_text("# Add sites to block, one per line\n# Example:\n# reddit.com\n# twitter.com\n")
+        except (PermissionError, OSError) as e:
+            log(f"ERROR: Cannot create sites.txt: {e}")
+            log("Please create sites.txt manually in the script directory")
+            # Continue anyway - daemon will still work if sites.txt is created later
 
     # Initial state check
     ensure_correct_state()
