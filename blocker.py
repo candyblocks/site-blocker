@@ -10,6 +10,7 @@ import time
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 # Configuration
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -20,6 +21,7 @@ BLOCKER_MARKER_END = "# END SITE-BLOCKER"
 CHECK_INTERVAL = 300  # Check every 5 minutes
 BLOCKING_START_HOUR = 19  # 7pm
 BLOCKING_END_HOUR = 7     # 7am
+TIMEZONE = ZoneInfo("America/Los_Angeles")  # Pacific time
 
 def log(message):
     """Log with timestamp"""
@@ -27,14 +29,10 @@ def log(message):
     print(f"[{timestamp}] {message}", flush=True)
 
 def is_blocking_hours():
-    """Check if current time is within blocking hours (7pm-7am)"""
-    # TEMPORARY: Always block for manual testing
-    # TODO: Uncomment the lines below to re-enable time-based blocking
-    return True
-
-    # current_hour = datetime.now().hour
-    # # Blocking hours: 19-23 and 0-6 (7pm to 7am)
-    # return current_hour >= BLOCKING_START_HOUR or current_hour < BLOCKING_END_HOUR
+    """Check if current time is within blocking hours (7pm-7am Pacific)"""
+    current_hour = datetime.now(TIMEZONE).hour
+    # Blocking hours: 19-23 and 0-6 (7pm to 7am)
+    return current_hour >= BLOCKING_START_HOUR or current_hour < BLOCKING_END_HOUR
 
 def load_sites():
     """Load sites to block from configuration file"""
@@ -172,7 +170,7 @@ def ensure_correct_state():
 def main():
     """Main daemon loop"""
     log("Site Blocker daemon starting")
-    log(f"Blocking hours: {BLOCKING_START_HOUR}:00 - {BLOCKING_END_HOUR}:00")
+    log(f"Blocking hours: {BLOCKING_START_HOUR}:00 - {BLOCKING_END_HOUR}:00 Pacific Time")
     log(f"Checking every {CHECK_INTERVAL} seconds")
 
     # Check if running as root

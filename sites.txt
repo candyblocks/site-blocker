@@ -4,6 +4,7 @@
 
 # Social Media
 reddit.com
+old.reddit.com
 # twitter.com
 # x.com
 # instagram.com
