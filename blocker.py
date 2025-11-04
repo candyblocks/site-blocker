@@ -191,12 +191,23 @@ def main():
 
     # Initial state check
     ensure_correct_state()
+    last_check_time = time.time()
 
     # Main loop
     try:
         while True:
             time.sleep(CHECK_INTERVAL)
+
+            # Check if we've been asleep (e.g., laptop sleep)
+            current_time = time.time()
+            time_elapsed = current_time - last_check_time
+
+            # If more than 2x the check interval has passed, we probably woke from sleep
+            if time_elapsed > (CHECK_INTERVAL * 2):
+                log(f"Detected wake from sleep ({int(time_elapsed)}s elapsed), checking immediately")
+
             ensure_correct_state()
+            last_check_time = current_time
     except KeyboardInterrupt:
         log("Daemon stopping - cleaning up")
         # Remove blocks on exit
